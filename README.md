@@ -30,7 +30,11 @@ are addressed by. The manifest's `name` field is display text only.
 An app is a dashboard; the artifact is the same `DashboardBundle` JSON the panel's
 export produces (authored files as base64, nothing generated).
 
-1. Export the app in the panel (Dashboards › ⋯ › export) or from the machine that has it.
+1. Pack the app's directory into a bundle — `bun tools/pack.ts <dir> > apps/<slug>.bundle.json`
+   from this checkout. The script follows the store's own packing rules (`collect_files`):
+   authored files travel, `.adi/`, `node_modules/`, `.git/` and the root `config.toml` never do.
+   The `id`/`name`/`host` fields at the top of the script are the publisher's — edit them per app;
+   `host` is a label *preference* the installing machine may override.
 2. Commit the bundle here: `apps/<slug>.bundle.json`.
 3. Add the entry to `apps/marketplace.json`:
 
