@@ -1,4 +1,12 @@
 {
   "name": "ADI starter apps",
-  "apps": []
+  "apps": [
+    {
+      "slug": "starter-status",
+      "name": "Starter Status",
+      "description": "The smallest complete ADI app: one panel polling one route. Install, start, read three files — the anatomy of every app.",
+      "version": "0.1.0",
+      "artifact": "https://raw.githubusercontent.com/adi-family/marketplace/main/apps/starter-status.bundle.json"
+    }
+  ]
 }
