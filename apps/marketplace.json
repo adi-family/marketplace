@@ -6,7 +6,9 @@
       "name": "Starter Status",
       "description": "The smallest complete ADI app: one panel polling one route. Install, start, read three files — the anatomy of every app.",
       "version": "0.1.0",
-      "artifact": "https://raw.githubusercontent.com/adi-family/marketplace/main/apps/starter-status.bundle.json"
+      "repo": "https://github.com/adi-family/mp-starter-status.git",
+      "commit": "0094d947ecceb7a34811f995d0e40a5ae1d8d74d",
+      "branch": "main"
     }
   ]
 }
