@@ -5,37 +5,55 @@ This repository **is** the marketplace — per the standing decision
 a marketplace is one JSON manifest at an HTTPS URL the operator chose. No platform,
 no hosting, no accounts, nothing to operate.
 
-An **app is a git repository at a pinned commit**, and installing one is cloning it.
+An **item is a git repository at a pinned commit**, and installing one is cloning it.
 This repository holds the manifests that say which repository and which commit; the
-apps themselves live in repositories of their own, one per app, prefixed `mp-`.
+items themselves live in repositories of their own, one per item, prefixed `mp-`.
 
-One directory per kind of marketplace:
+An item is a **bundle**: a named collection of platform elements — agents, tools,
+dashboards, LLM and embedding backends, hive services, triggers, a project scaffold —
+which the repository declares simply by having a directory per kind at its root. All of
+it installs, or one element of it does. An app is the special case of a bundle whose
+only element is a dashboard, which is what `starter-status` is.
 
-| path | kind | status |
+One manifest, at [`apps/marketplace.json`](apps/marketplace.json). The path is v1's — when an
+item could only be an app — and it stays where it is because every machine already fetches that
+URL. A bundle of agents and tools is listed in the same file.
+
+Published:
+
+| item | what it carries | repository |
 | --- | --- | --- |
-| [`apps/marketplace.json`](apps/marketplace.json) | apps (dashboards) | live |
-| `tools/…`, `agents/…`, `presets/…` | the other three kinds | later, deliberately not yet |
+| Starter Status | a dashboard | [`mp-starter-status`](https://github.com/adi-family/mp-starter-status) |
+| Code reviewer | an agent | [`mp-reviewer`](https://github.com/adi-family/mp-reviewer) |
+| Changelog tools | two tools | [`mp-changelog-tools`](https://github.com/adi-family/mp-changelog-tools) |
+| Standup board | a dashboard | [`mp-standup`](https://github.com/adi-family/mp-standup) |
+| CRM suite | agent · tool · LLM backend · dashboard | [`mp-crm-suite`](https://github.com/adi-family/mp-crm-suite) |
 
-Published apps:
-
-| app | repository |
-| --- | --- |
-| Starter Status | [`adi-family/mp-starter-status`](https://github.com/adi-family/mp-starter-status) |
+**The last four are demos, and say so on their own pages.** They exist to be read by
+somebody publishing their first item: one per shape — an agent alone, tools alone, a
+dashboard alone, and one bundle carrying four kinds at once. Each repository's README
+is the item's long form in the Store, so the explanation and the thing explained are
+the same file.
 
 ## Add this marketplace to a machine
 
+**Nothing to do: it is already there.** Since 2026-09-14 every machine starts with this
+marketplace configured, under the name `store` — so every install is addressed
+`store/<slug>`, and the ADI Store's own Install button is one click
+(`mono › crates/adi-marketplace/src/sources.rs`).
+
 ```sh
-adi-mono marketplace add adi \
-  https://raw.githubusercontent.com/adi-family/marketplace/main/apps/marketplace.json
 adi-mono marketplace sync
 adi-mono marketplace apps
-adi-mono marketplace install adi/starter-status --name "Starter Status"
+adi-mono marketplace install store/starter-status --name "Starter Status"
 ```
 
-The local name (`adi`) is the machine's own — the first half of `adi/<slug>` installs
-are addressed by. The manifest's `name` field is display text only. The name given at
-install is the operator's: it becomes their dashboard's name, id and hostname, and two
-people installing one app under two names is ordinary.
+It has no privileges for being official: `adi-mono marketplace remove store` removes it
+like any other source, and a second marketplace is added beside it with
+`adi-mono marketplace add <name> <url>`. The local name is the machine's own — the first
+half of the address — and the manifest's `name` field is display text only. The name
+given at install is the operator's: it becomes their copy's name, id and hostname, and
+two people installing one item under two names is ordinary.
 
 ## Publish an app
 
@@ -46,7 +64,10 @@ something that could never start. It must **not** version `config.toml`, `.adi/`
 `node_modules/`: those belong to the installing machine, which adds them to the
 clone's local excludes so `git status` in an installed app shows only its owner's work.
 
-1. Push the app as its own repository, `adi-family/mp-<slug>`.
+1. Push the item as its own repository, `adi-family/mp-<slug>`, with one directory per
+   kind at its root — `agents/`, `tools/`, `dashboards/<name>/`, `llm/`, `embeddings/`,
+   `services/`, `triggers/`, `project/`. The four demo repositories above are each an
+   example of one shape; copy whichever is closest.
 2. Take the commit: `git rev-parse HEAD`.
 3. Add the entry to `apps/marketplace.json`:
 
