@@ -169,6 +169,36 @@
           "caption": "The draft sales-bot writes, before anybody sends it"
         }
       ]
+    },
+    {
+      "slug": "vscode",
+      "name": "VS Code",
+      "description": "A full VS Code in the browser behind the front door — openvscode-server, fetched and sha256-verified at first start, no Rust and no binary checked into the bundle.",
+      "keywords": [
+        "vscode",
+        "editor",
+        "ide",
+        "openvscode-server",
+        "dev-environment"
+      ],
+      "version": "1.0.0",
+      "repo": "https://github.com/adi-family/mp-vscode.git",
+      "commit": "7a540510640ee75d4d199d192a3d2b56fbe27675",
+      "branch": "main",
+      "icon": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><rect width='48' height='48' rx='10' fill='%231e1e1e'/><path d='M34 6 14 24 6 18v12l8-6 20 18 8-4V10z' fill='%2307a9f9'/><path d='M34 6 14 24 34 42V6z' fill='%23007ACC'/></svg>",
+      "readme": "# VS Code\n\nA full VS Code in the browser, proxied behind the front door — openvscode-server\n(gitpod-io/openvscode-server) v1.109.5, fetched and verified on first start, no Rust, no binary\nchecked into this repo.\n\nThis bundle carries two elements:\n\n| kind | name | what it is |\n|---|---|---|\n| service | `vscode` | the hive service that fetches, verifies and runs openvscode-server |\n| project | VS Code | the project scaffold it's recommended to file the service under |\n\nInstall into a project of its own:\n\n```sh\nadi-mono marketplace install <marketplace>/vscode --new-project \"VS Code\"\n```\n\nThen start it (parked services have no on/off switch to force — see `guides/services.md` — so\ninstall never launches it):\n\n```sh\nadi-mono marketplace start <marketplace>/vscode/services/vscode\n```\n\n## First start takes a minute\n\nOn its first start the service downloads the right build for the host's architecture\n(`linux-x64` or `linux-arm64` — there is no macOS build published upstream, so this refuses with a\nclear message on Darwin), checks it against a pinned sha256, and caches the extracted binary under\n`.vscode-server/` in the directory it runs from (the project's own directory, when installed into\none, which is also what the editor opens by default — see \"The workspace folder\" below). Every\nlater start reuses the cache and is instant.\n\n## The connection token\n\nopenvscode-server refuses every request without a connection token. On each start the script:\n\n1. tries `adi-mono secrets read VSCODE_TOKEN` (**global** scope — a hive service has no project\n   context to look a project-scoped secret up against, unlike an agent);\n2. failing that, reuses whatever token it generated on a previous start, from\n   `.vscode-server/connection-token` (mode `0600`);\n3. failing that (first start, no secret set), generates a random 32-byte token and writes it there.\n\nSet the secret yourself to pick a token you already know, and to survive the state directory being\nwiped:\n\n```sh\nadi-mono secrets set VSCODE_TOKEN   # value from stdin or --value\n```\n\nWhichever token is in force, open `https://vscode.adi/?tkn=<token>` — without `?tkn=` (or with the\nwrong one) the server answers `403`.\n\n## The workspace folder\n\nopenvscode-server has no documented flag for this, but it does have one: `--default-folder`,\nundocumented in `--help` but present in `server-main.js`'s own CLI parser (`default-folder`, read\ninto `folderUri`) — it sets what opens for a request that carries no `folder=` of its own. This\nservice passes it `$WORKSPACE_DIR`, which defaults to the directory the service itself runs\nin — the project's directory, for a project-scoped install. Override it by setting `WORKSPACE_DIR`\nin the service's `environment.static` block in `.adi/hive.yaml` before starting, if you want it to\nopen somewhere else.\n\n## Why no Rust, why no binary here\n\nThe upstream release is a prebuilt Node.js + native-modules tarball — exactly the compiled-binary\nshape a bundle may never carry (`docs/marketplace-bundles.md`, \"No Rust in an item\"). So this\nbundle ships none of it: the service's own script fetches the two possible platform tarballs by\nURL at **start** time, not at publish time, and refuses to run anything whose sha256 doesn't match\nthe digest pinned in `services/vscode.yaml`. That script is itself the one named hole the same\ndocument calls out — \"a hive service's `runner.script` ... can `curl` a binary and execute it at\nruntime\" — stated plainly rather than papered over.\n\n## Checking it works\n\n```sh\ncurl -s -o /dev/null -w '%{http_code}\\n' https://vscode.adi/              # 403 — no token\ncurl -s -o /dev/null -w '%{http_code}\\n' \"https://vscode.adi/?tkn=wrong\"   # 403 — wrong token\ncurl -s -o /dev/null -w '%{http_code}\\n' \"https://vscode.adi/?tkn=$TOKEN\"  # 302 → the workbench\n```\n\n## Licence\n\nMIT (this bundle). openvscode-server is itself MIT; see its own repository for third-party notices.\n",
+      "elements": [
+        {
+          "kind": "service",
+          "name": "vscode",
+          "description": "Fetches, verifies and runs openvscode-server behind the front door."
+        },
+        {
+          "kind": "project",
+          "name": "config",
+          "description": "The project scaffold the service is recommended to file under."
+        }
+      ]
     }
   ]
 }
